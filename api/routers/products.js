@@ -2,6 +2,32 @@ const express = require("express");
 const router = express.Router(); //used for better handling of endpoints with differ http verbs(get,put,post,patch,etc...)
 const mongoose = require("mongoose");
 const Product = require("../models/products");
+const multer = require('multer')
+const path = require('path')
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, path.join(__dirname,'../../uploads'));
+  },
+  filename: function(req, file, cb) {
+    cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+  }
+});
+const filefilter = (req,file,cb)=>{
+  //reject a file
+  if(file.mimetype === 'image/jpeg' ||file.mimetype === 'image/png' ){
+    cb(null,true)
+  }else cb(null,false)
+}
+
+const upload = multer({
+  storage  : storage,
+  fileFilter : filefilter,
+  limits : {
+    fileSize : 1024*1024*8 //max 8 MB
+  }
+})
+
 
 router.get("/", (req, res, next) => {
   //   res.status("200").json({
@@ -9,6 +35,7 @@ router.get("/", (req, res, next) => {
   //     reqType: "GET",
   //   });
   Product.find()
+  .select("name price _id productImage")
     .exec()
     .then((docs) => {
       console.log(docs);
@@ -20,21 +47,13 @@ router.get("/", (req, res, next) => {
     });
 });
 
-router.post("/", (req, res, next) => {
-  //    const product = {
-  //        name : req.body.name,
-  //        price : req.body.price
-  //    }
-  // res.status("201").json({
-  //  message : "product created",
-  //  reqType : "POST",
-  //  product : product
-
-  // })
+router.post("/",upload.single('productImage'), (req, res, next) => {
+   console.log(req.file)
   const product = new Product({
     _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
     price: req.body.price,
+    productImage : req.file.path
   });
 
   product
@@ -54,16 +73,11 @@ router.post("/", (req, res, next) => {
 });
 
 router.get("/:productId", (req, res, next) => {
-  // res.status("200").json({
-  //  message : "GET product by Id",
-  //  productId : req.params.productId
-  // })
   const id = req.params.productId;
   Product.findById(id)
+   .select('name price _id productImage')
     .exec()
     .then((doc) => {
-      //inorde to hide the field "__v"
-      //    const result = doc.toObject({ versionKey: false })
       console.log("From database", doc);
       if (doc) {
         res.status(200).json(doc);

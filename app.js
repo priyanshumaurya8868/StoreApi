@@ -8,9 +8,10 @@ const ordersResources = require("./api/routers/orders");
 
 mongoose.connect(`mongodb+srv://Priyanshu:${process.env.MONGO_DB_PW}@cluster0.wtthl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`)
 
+
 app.use(morgan("dev")); // logging for every request
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true }));// for encoding prams
+app.use(express.json());//body json
 
 app.use((req, res, next) => {
   res.header("Allow-Control-Allow-Origin", "*"); // u can uneven restrict it app.header('Allow-Control-Allow-Origin','https://myCoolPage.com')
@@ -32,7 +33,6 @@ app.use((req, res, next) => {
 // routes... (or end points)
 app.use("/products", productsResource);
 app.use("/orders", ordersResources);
-
 //if none of the defined endpoint handled the request,will reach to this
 app.use((req, res, next) => {
   const error = new Error("Not found!");
