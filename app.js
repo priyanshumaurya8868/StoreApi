@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const mongoose  = require("mongoose");
 const productsResource = require("./api/routers/products");
 const ordersResources = require("./api/routers/orders");
+const usersResource = require('./api/routers/User')
 
 
 mongoose.connect(`mongodb+srv://Priyanshu:${process.env.MONGO_DB_PW}@cluster0.wtthl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`)
@@ -30,9 +31,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// routes... (or end points)
+// routes... 
 app.use("/products", productsResource);
 app.use("/orders", ordersResources);
+app.use('/users',usersResource)
 //if none of the defined endpoint handled the request,will reach to this
 app.use((req, res, next) => {
   const error = new Error("Not found!");
